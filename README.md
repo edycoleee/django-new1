@@ -284,7 +284,7 @@ GET http://localhost:8000/api/test HTTP/1.1
 GET http://localhost:8000/api/error HTTP/1.1
 ```
 
-## 4. COBA APP 4 >> EXCEPTION HANDLER
+## 4. COBA APP 4 >> SWAGGER UI
 
 ```py
 pip install drf-spectacular
