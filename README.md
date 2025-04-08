@@ -111,14 +111,77 @@ class TestViewTests(APITestCase):
 ### 1. GET TEST
 GET http://localhost:8000/api/test HTTP/1.1
 ```
+
+```cmd
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/edycoleee/django-new1.git
+git push -u origin main
+```
+
 ## 3. COBA APP 2
 
+```py
+#Install library recommended yang mendukung DRF full (CBV, ViewSet, Router, dll)
+pip install drf-spectacular
+```
+
 ```js
-//Membuat api : coba
 
-GET http://localhost:8000/api/test
+//Response Wrapper di Django REST Framework (DRF)
 
-response : {
-  "message": "Hello World"
+{
+  "status": "success",
+  "message": "Hello World",
+  "data": {
+    // isi data sebenarnya
+  }
+}
+```
+
+```py
+#/restapi/utils/response_wrapper.py
+def success_response(message, data=None, status="success"):
+    return {
+        "status": status,
+        "message": message,
+        "data": data if data is not None else {}
+    }
+
+# coba/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from restapi.utils.response_wrapper import success_response
+
+class TestView(APIView):
+    def get(self, request):
+        data = {"info": "This is a wrapped response"}
+        return Response(success_response("Hello World", data))
+
+//coba/request.rest
+### 1. GET TEST
+GET http://localhost:8000/api/test HTTP/1.1
+
+### Response :
+{
+  "status": "success",
+  "message": "Hello World",
+  "data": {
+    "info": "This is a wrapped response"
+  }
+}
+```
+
+
+
+```js
+//Custom Exception Handler biar response error juga konsisten
+
+{
+  "status": "error",
+  "message": "Not Found",
+  "data": {}
 }
 ```
