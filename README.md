@@ -37,7 +37,23 @@ python manage.py runserver
 
 ```
 
-## 2. COBA APP 1
+```cmd
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/edycoleee/django-new1.git
+git push -u origin main
+```
+```cmd
+git clone https://github.com/edycoleee/django-new1.git
+
+git chekcout (branch yg dituju)
+
+git pull
+```
+
+## 2. COBA APP 1 >> RESPONSE SEDERHANA
 
 ```js
 //Membuat api : coba
@@ -112,16 +128,7 @@ class TestViewTests(APITestCase):
 GET http://localhost:8000/api/test HTTP/1.1
 ```
 
-```cmd
-git init
-git add .
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/edycoleee/django-new1.git
-git push -u origin main
-```
-
-## 3. COBA APP 2
+## 3. COBA APP 2 >> RESPONSE WRAPPER
 
 ```py
 #Install library recommended yang mendukung DRF full (CBV, ViewSet, Router, dll)
@@ -174,7 +181,7 @@ GET http://localhost:8000/api/test HTTP/1.1
 }
 ```
 
-
+## 3. COBA APP 3 >> EXCEPTION HANDLER
 
 ```js
 //Custom Exception Handler biar response error juga konsisten
