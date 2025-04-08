@@ -57,6 +57,15 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'restapi.utils.exception_handler.custom_exception_handler'
 }
 
+# restapi/settings.py >>swagger
+INSTALLED_APPS += [
+    'drf_spectacular',
+]
+
+REST_FRAMEWORK.update({
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+})
+
 ROOT_URLCONF = 'restapi.urls'
 
 TEMPLATES = [
@@ -128,3 +137,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'REST API COBA',
+    'DESCRIPTION': 'Dokumentasi API project coba',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}

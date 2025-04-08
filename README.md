@@ -299,4 +299,29 @@ INSTALLED_APPS += [
 REST_FRAMEWORK.update({
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 })
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'REST API COBA',
+    'DESCRIPTION': 'Dokumentasi API project coba',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+# restapi/urls.py
+from django.contrib import admin
+from django.urls import path, include
+from drf_spectacular.views import (SpectacularSwaggerView)
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('coba.urls')),  # versioned API
+
+     # Swagger
+    path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+]
 ```
+
+Buka di browser:
+
+Swagger UI: `http://localhost:8000/api/docs/swagger/`
