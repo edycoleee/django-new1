@@ -1,3 +1,6 @@
 //coba/request.rest
 ### 1. GET TEST
 GET http://localhost:8000/api/test HTTP/1.1
+
+### 2. GET TEST
+GET http://localhost:8000/api/error HTTP/1.1

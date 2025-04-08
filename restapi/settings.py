@@ -51,6 +51,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# restapi/settings.py >>exception
+
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'restapi.utils.exception_handler.custom_exception_handler'
+}
+
 ROOT_URLCONF = 'restapi.urls'
 
 TEMPLATES = [
