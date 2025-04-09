@@ -325,3 +325,76 @@ urlpatterns = [
 Buka di browser:
 
 Swagger UI: `http://localhost:8000/api/docs/swagger/`
+
+## 5. PRODUCT APP
+
+```py
+python manage.py startapp product
+```
+```py
+python3 manage.py dbshell
+```
+```sql
+CREATE TABLE tb_product (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kd_product TEXT NOT NULL,
+    nm_product TEXT NOT NULL,
+    price REAL NOT NULL
+);
+```
+```py
+.tables
+```
+```py
+# restapi/urls.py
+from django.contrib import admin
+from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    
+    # ini yang penting: path ini HARUS ada
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+
+    # Include routes dari apps
+    path('api/', include('coba.urls')),  # Coba App
+    path('api/', include('product.urls')), #Product App
+    #path('api/', include('customer.urls')), #Customer App
+
+     # 🔍 Swagger UI >> API Dokumentasi >> AUTO
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+]
+
+
+#/restapi/utils/response_wrapper.py
+def success_response(message=None, data=None, status="success"):
+    return {
+        "status": status,
+        "message": message,
+        "data": data if data is not None else {}
+    }
+
+#restapi/utils/exception_handler.py
+from rest_framework.views import exception_handler as drf_exception_handler
+from rest_framework.exceptions import APIException
+from rest_framework import status
+from restapi.utils.response_wrapper import success_response
+
+
+class NotFoundException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Not found'
+    default_code = 'not_found'
+
+def custom_exception_handler(exc, context):
+    response = drf_exception_handler(exc, context)
+    if response is not None:
+        response.data = success_response(status='error', data=None, message=str(exc))
+    return response
+
+
+
+
+
+```

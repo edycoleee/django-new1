@@ -1,5 +1,5 @@
 #/restapi/utils/response_wrapper.py
-def success_response(message, data=None, status="success"):
+def success_response(message=None, data=None, status="success"):
     return {
         "status": status,
         "message": message,

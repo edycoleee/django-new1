@@ -1,23 +1,17 @@
-#/restapi/utils/exception_handler.py
-from rest_framework.views import exception_handler
-from rest_framework.response import Response
+#restapi/utils/exception_handler.py
+from rest_framework.views import exception_handler as drf_exception_handler
+from rest_framework.exceptions import APIException
+from rest_framework import status
 from restapi.utils.response_wrapper import success_response
 
 
+class NotFoundException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = 'Not found'
+    default_code = 'not_found'
+
 def custom_exception_handler(exc, context):
-    response = exception_handler(exc, context)
-
+    response = drf_exception_handler(exc, context)
     if response is not None:
-        message = response.data.get('detail') if 'detail' in response.data else "Something went wrong"
-        return Response(success_response(
-            message=message,
-            data={},
-            status="error"
-        ), status=response.status_code)
-
-    # Untuk unhandled exception
-    return Response(success_response(
-        message=str(exc),
-        data={},
-        status="error"
-    ), status=500)
+        response.data = success_response(status='error', data=None, message=str(exc))
+    return response
