@@ -13,7 +13,8 @@ class ProductViewSet(ViewSet):
     @extend_schema(
         summary="List Products",
         description="Mengambil semua data produk dari tabel `tb_product`.",
-        responses={200: ProductOutputSerializer(many=True)}
+        responses={200: ProductOutputSerializer(many=True)},
+        tags=["Product"]
     )
     def list(self, request):
         products = get_all_products()
@@ -23,7 +24,8 @@ class ProductViewSet(ViewSet):
     @extend_schema(
         summary="Retrieve Product",
         description="Mengambil detail produk berdasarkan ID.",
-        responses={200: ProductOutputSerializer, 404: {"message": "Product not found"}}
+        responses={200: ProductOutputSerializer, 404: {"message": "Product not found"}},
+        tags=["Product"]
     )
     def retrieve(self, request, pk=None):
         product = get_product_by_id(pk)
@@ -36,7 +38,8 @@ class ProductViewSet(ViewSet):
         summary="Create Product",
         description="Membuat data produk baru.",
         request=ProductInputSerializer,
-        responses={201: ProductOutputSerializer}
+        responses={201: ProductOutputSerializer},
+        tags=["Product"]
     )
     def create(self, request):
         serializer = ProductInputSerializer(data=request.data)
@@ -49,7 +52,8 @@ class ProductViewSet(ViewSet):
         summary="Update Product",
         description="Mengupdate data produk berdasarkan ID.",
         request=ProductInputSerializer,
-        responses={200: ProductOutputSerializer, 404: {"message": "Product not found"}}
+        responses={200: ProductOutputSerializer, 404: {"message": "Product not found"}},
+        tags=["Product"]
     )
     def update(self, request, pk=None):
         serializer = ProductInputSerializer(data=request.data)
@@ -63,7 +67,8 @@ class ProductViewSet(ViewSet):
     @extend_schema(
         summary="Delete Product",
         description="Menghapus produk berdasarkan ID.",
-        responses={204: None, 404: {"message": "Product not found"}}
+        responses={204: None, 404: {"message": "Product not found"}},
+        tags=["Product"]
     )
     def destroy(self, request, pk=None):
         product = get_product_by_id(pk)
