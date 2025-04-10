@@ -1,5 +1,4 @@
 #/product/services.py
-
 from restapi.utils.db import execute_query
 
 def get_all_products():

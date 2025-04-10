@@ -53,7 +53,6 @@ MIDDLEWARE = [
 ]
 
 # restapi/settings.py >>exception
-
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'restapi.utils.exception_handler.custom_exception_handler'
 }
@@ -63,6 +62,7 @@ INSTALLED_APPS += [
     'drf_spectacular',
 ]
 
+# restapi/settings.py >>drf_spectacular
 REST_FRAMEWORK.update({
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 })
@@ -139,6 +139,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Setting yang tampil di swagger 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'REST API COBA',
     'DESCRIPTION': 'Dokumentasi API project coba',

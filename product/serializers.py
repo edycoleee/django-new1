@@ -1,4 +1,4 @@
-
+#/product/serializer.py >>validation dan swagger input
 from rest_framework import serializers
 
 class ProductInputSerializer(serializers.Serializer):

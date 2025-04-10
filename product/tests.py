@@ -1,3 +1,4 @@
+#/product/tests.py
 import json
 from django.test import TestCase, Client
 from rest_framework import status
