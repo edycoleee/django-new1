@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'coba',
     'product',
+    'customer',
 ]
 
 MIDDLEWARE = [

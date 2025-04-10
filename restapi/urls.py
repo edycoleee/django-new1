@@ -28,7 +28,7 @@ urlpatterns = [
     # Include routes dari apps
     path('api/', include('coba.urls')),  # Coba App
     path('api/', include('product.urls')), #Product App
-    #path('api/', include('customer.urls')), #Customer App
+    path('api/', include('customer.urls')), #Customer App
 
      # 🔍 Swagger UI >> API Dokumentasi >> AUTO
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

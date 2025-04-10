@@ -32,3 +32,30 @@ content-type: application/json
 
 ### 5. DELETE BY ID
 DELETE  http://localhost:8000/api/product/1/ HTTP/1.1
+
+
+//API CUSTOMER
+### 1. CREATE 
+POST http://localhost:8000/api/customers/ 
+content-type: application/json
+
+{
+"nm_customer": "edy2", "alamat": "Semarang2", "email" :"edy2@gmail.com", "nohp" : "08122888882"
+}
+
+### 2. GET ALL
+GET http://localhost:8000/api/customers/ HTTP/1.1
+
+### 3. GET BY ID
+GET http://localhost:8000/api/customers/2/ HTTP/1.1
+
+### 4. UPDATE BY ID
+PUT http://localhost:8000/api/customers/1/ HTTP/1.1
+content-type: application/json
+
+{
+"nm_customer": "edy1 UPDATE", "alamat": "Semarang2", "email" :"edy2@gmail.com", "nohp" : "08122888882"
+}
+
+### 5. DELETE BY ID
+DELETE  http://localhost:8000/api/customers/1/ HTTP/1.1

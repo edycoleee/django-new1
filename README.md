@@ -350,6 +350,13 @@ CREATE TABLE tb_product (
 ```py
 .tables
 ```
+JIKA TERJADI ERROR TIDAK BISA MASUK SQLITE >> OS WINDOWS
+
+Download https://sqlite.org/download.html >> sqlite-tools-win-x64-3490100.zip
+Extrac kemudian copykan sqlite3.exe ke folder django.
+`python manage.py dbshell`
+
+
 3. OpenAPI 3.0
 ```py
 pip install drf-spectacular
@@ -591,6 +598,17 @@ class ProductViewSet(ViewSet):
             raise NotFoundException("Product not found")
         delete_product(pk)
         return Response(success_response("Product Deleted", data={}), status=status.HTTP_204_NO_CONTENT)
+
+#/product/urls.py
+from django.urls import path
+from rest_framework.routers import DefaultRouter
+from product.views import ProductViewSet
+
+router = DefaultRouter()
+router.register(r'product', ProductViewSet, basename='product')
+
+urlpatterns = router.urls
+
 ```
 
 ```py 
@@ -677,6 +695,14 @@ class ProductViewSetTests(TestCase):
 
 ```
 
+```py
+# Test semua
+python manage.py test
+
+# Test per folder
+python manage.py test product/
+```
+
 ```json
 //coba/request.rest
 
@@ -705,4 +731,332 @@ content-type: application/json
 
 ### 5. DELETE BY ID
 DELETE  http://localhost:8000/api/product/1/ HTTP/1.1
+```
+
+
+## 5. CUSTOMER APP
+
+1. Membuat App customer
+
+MASUK VENV `.venv/Scripts/activate`
+
+```py
+python manage.py startapp customer
+```
+2. Membuat tabel SQLITE tanpa ORM
+
+```py
+python3 manage.py dbshell
+```
+
+```sql
+CREATE TABLE tb_customer (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nm_customer TEXT NOT NULL,
+    alamat TEXT NOT NULL,
+    email TEXT NOT NULL,
+    nohp TEXT NOT NULL
+);
+```
+```py
+.tables
+```
+
+4. FOLDER UTAMA
+```py
+# restapi/urls.py >> URL UTAMA
+from django.contrib import admin
+from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    
+    # ini yang penting: path ini HARUS ada
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+
+    # Include routes dari apps
+    path('api/', include('coba.urls')),  # Coba App
+    path('api/', include('product.urls')), #Product App
+    path('api/', include('customer.urls')), #Customer App
+
+     # 🔍 Swagger UI >> API Dokumentasi >> AUTO
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+]
+
+```
+4. CUSTOMER APP
+
+```py
+#/customer/serializer.py >>validation dan swagger input
+from rest_framework import serializers
+
+class CustomerInputSerializer(serializers.Serializer):
+    nm_customer = serializers.CharField()
+    alamat = serializers.CharField()
+    email = serializers.EmailField()
+    nohp = serializers.CharField()
+
+class CustomerOutputSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    nm_customer = serializers.CharField()
+    alamat = serializers.CharField()
+    email = serializers.EmailField()
+    nohp = serializers.CharField()
+
+#/customer/services.py >>raw SQL
+from restapi.utils.db import execute_query
+
+def get_all_customers():
+    return execute_query("SELECT * FROM tb_customer")
+
+def get_customer_by_id(customer_id):
+    return execute_query("SELECT * FROM tb_customer WHERE id = %s", [customer_id], fetchone=True)
+
+def delete_customer(customer_id):
+    execute_query("DELETE FROM tb_customer WHERE id = %s", [customer_id], fetchall=False)
+
+def create_customer(data):
+    query = """
+        INSERT INTO tb_customer (nm_customer, alamat, email, nohp)
+        VALUES (%s, %s, %s, %s)
+        RETURNING id, nm_customer, alamat, email, nohp
+    """
+    params = [data['nm_customer'], data['alamat'], data['email'], data['nohp']]
+    return execute_query(query, params, fetchone=True)
+
+def update_customer(customer_id, data):
+    query = """
+        UPDATE tb_customer
+        SET nm_customer = %s, alamat = %s, email = %s, nohp = %s
+        WHERE id = %s
+        RETURNING id, nm_customer, alamat, email, nohp
+    """
+    params = [data['nm_customer'], data['alamat'], data['email'], data['nohp'], customer_id]
+    return execute_query(query, params, fetchone=True)
+
+# customer/schema.py
+from drf_spectacular.utils import extend_schema
+from .serializers import CustomerInputSerializer, CustomerOutputSerializer
+
+customer_list_schema = extend_schema(
+    summary="List Customers",
+    description="Mengambil daftar seluruh customer.",
+    responses={200: CustomerOutputSerializer(many=True)},
+    tags=["Customer"]
+)
+
+customer_retrieve_schema = extend_schema(
+    summary="Retrieve Customer",
+    description="Mengambil detail customer berdasarkan ID.",
+    responses={200: CustomerOutputSerializer},
+    tags=["Customer"]
+)
+
+customer_create_schema = extend_schema(
+    summary="Create Customer",
+    description="Membuat customer baru.",
+    request=CustomerInputSerializer,
+    responses={201: CustomerOutputSerializer},
+    tags=["Customer"]
+)
+
+customer_update_schema = extend_schema(
+    summary="Update Customer",
+    description="Memperbarui data customer berdasarkan ID.",
+    request=CustomerInputSerializer,
+    responses={200: CustomerOutputSerializer},
+    tags=["Customer"]
+)
+
+customer_delete_schema = extend_schema(
+    summary="Delete Customer",
+    description="Menghapus customer berdasarkan ID.",
+    responses={204: None},
+    tags=["Customer"]
+)
+
+
+
+#/customer/views.py >> request method-validation-service-response + openapi extend
+from rest_framework.viewsets import ViewSet
+from rest_framework.response import Response
+from rest_framework import status
+from restapi.utils.response_wrapper import success_response
+from restapi.utils.exception_handler import NotFoundException
+from .services import *
+from .serializers import *
+from drf_spectacular.utils import extend_schema
+from .schema import (
+    customer_list_schema,
+    customer_retrieve_schema,
+    customer_create_schema,
+    customer_update_schema,
+    customer_delete_schema,
+)
+
+
+class CustomerViewSet(ViewSet):
+
+    @customer_list_schema
+    def list(self, request):
+        customers = get_all_customers()
+        serializer = CustomerOutputSerializer(customers, many=True)
+        return Response(success_response("List Customer", data=serializer.data))
+
+    @customer_retrieve_schema
+    def retrieve(self, request, pk=None):
+        customer = get_customer_by_id(pk)
+        if not customer:
+            raise NotFoundException("Customer not found")
+        serializer = CustomerOutputSerializer(customer)
+        return Response(success_response("Detail Customer", data=serializer.data))
+
+    @customer_create_schema
+    def create(self, request):
+        serializer = CustomerInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        customer = create_customer(serializer.validated_data)
+        output = CustomerOutputSerializer(customer)
+        return Response(success_response("Customer Created", data=output.data), status=status.HTTP_201_CREATED)
+
+    @customer_update_schema
+    def update(self, request, pk=None):
+        serializer = CustomerInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        customer = update_customer(pk, serializer.validated_data)
+        if not customer:
+            raise NotFoundException("Customer not found")
+        output = CustomerOutputSerializer(customer)
+        return Response(success_response("Customer Updated", data=output.data))
+
+    @customer_delete_schema
+    def destroy(self, request, pk=None):
+        customer = get_customer_by_id(pk)
+        if not customer:
+            raise NotFoundException("Customer not found")
+        delete_customer(pk)
+        return Response(success_response("Customer Deleted", data={}), status=status.HTTP_204_NO_CONTENT)
+
+#customer/urls.py
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import CustomerViewSet
+
+router = DefaultRouter()
+router.register(r'customers', CustomerViewSet, basename='customer')
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
+```
+
+```py 
+#/customer/tests.py
+import json
+from django.test import TestCase, Client
+from rest_framework import status
+from django.urls import reverse
+from django.db import connection
+
+class CustomerViewSetTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS tb_customer (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nm_customer TEXT NOT NULL,
+                    alamat TEXT NOT NULL,
+                    email TEXT NOT NULL,
+                    nohp TEXT NOT NULL
+                )
+            """)
+            cursor.execute("""
+                INSERT INTO tb_customer (nm_customer, alamat, email, nohp)
+                VALUES (%s, %s, %s, %s)
+            """, ['edy1', 'Semarang1', 'edy1@gmail.com', '08122888881'])
+            self.customer_id = cursor.lastrowid
+
+    def tearDown(self):
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM tb_customer")
+
+    def test_list_customers(self):
+        url = reverse('customer-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_retrieve_customer(self):
+        url = reverse('customer-detail', args=[self.customer_id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['data']['nm_customer'], 'edy1')
+
+    def test_create_customer(self):
+        url = reverse('customer-list')
+        data = {
+            'nm_customer': 'edy2',
+            'alamat': 'Semarang2',
+            'email': 'edy2@gmail.com',
+            'nohp': '08122888882',
+        }
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_update_customer(self):
+        url = reverse('customer-detail', args=[self.customer_id])
+        data = {
+            'nm_customer': 'edy1 updated',
+            'alamat': 'Jakarta',
+            'email': 'edy1_new@gmail.com',
+            'nohp': '08122999999',
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_customer(self):
+        url = reverse('customer-detail', args=[self.customer_id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+
+```
+
+TESTING
+```py
+# Test semua
+python manage.py test
+
+# Test per folder
+python manage.py test customer/
+```
+
+```json
+//coba/request.rest
+
+//API CUSTOMER
+### 1. CREATE 
+POST http://localhost:8000/api/customer/ 
+content-type: application/json
+
+{
+"nm_customer": "edy1", "alamat": "Semarang2", "email" :"edy2@gmail.com", "nohp" : "08122888882"
+}
+
+### 2. GET ALL
+GET http://localhost:8000/api/customer/ HTTP/1.1
+
+### 3. GET BY ID
+GET http://localhost:8000/api/customer/2/ HTTP/1.1
+
+### 4. UPDATE BY ID
+PUT http://localhost:8000/api/customer/2/ HTTP/1.1
+content-type: application/json
+
+{
+"nm_customer": "edy1 UPDATE", "alamat": "Semarang2", "email" :"edy2@gmail.com", "nohp" : "08122888882"
+}
+
+### 5. DELETE BY ID
+DELETE  http://localhost:8000/api/customer/1/ HTTP/1.1
 ```
