@@ -703,7 +703,7 @@ python manage.py test
 python manage.py test product/
 ```
 
-```json
+```js
 //coba/request.rest
 
 //API PRODUCT
@@ -1031,7 +1031,7 @@ python manage.py test
 python manage.py test customer/
 ```
 
-```json
+```js
 //coba/request.rest
 
 //API CUSTOMER
