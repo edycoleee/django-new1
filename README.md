@@ -1060,3 +1060,7 @@ content-type: application/json
 ### 5. DELETE BY ID
 DELETE  http://localhost:8000/api/customer/1/ HTTP/1.1
 ```
+
+
+
+## 6. AUTH
